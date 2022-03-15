@@ -16,14 +16,9 @@ type Pair @entity {
   liquidityPositions: [LiquidityPosition!]! @derivedFrom(field: "pair")
 }
 
-type User @entity {
-  id: ID!
-  liquidityPositions: [LiquidityPosition!] @derivedFrom(field: "user")
-}
-
 type LiquidityPosition @entity {
   id: ID!
-  user: User!
+  user: Bytes!
   pair: Pair!
   liquidityTokenBalance: BigInt!
 }

@@ -6,7 +6,7 @@ import {
   Transfer,
   Sync,
 } from "../generated/templates/Pair/Pair";
-import { ADDRESS_ZERO, createUser, createLiquidityPosition } from "./helpers";
+import { ADDRESS_ZERO, getLiquidityPosition } from "./helpers";
 
 export function handleTransfer(event: Transfer): void {
   // ignore initial transfers for first adds
@@ -19,13 +19,10 @@ export function handleTransfer(event: Transfer): void {
 
   // user stats
   let from = event.params.from;
-  createUser(from);
   let to = event.params.to;
-  createUser(to);
 
   // get pair and load contract
   let pair = Pair.load(event.address.toHexString());
-  let pairContract = PairContract.bind(event.address);
 
   // liquidity token amount being transfered
   let value = event.params.value;
@@ -39,8 +36,6 @@ export function handleTransfer(event: Transfer): void {
     // update total supply
     pair.totalSupply = pair.totalSupply.plus(value);
     pair.save();
-
-    createLiquidityPosition(pair, to);
   }
 
   // burn
@@ -53,9 +48,9 @@ export function handleTransfer(event: Transfer): void {
   }
 
   if (from.toHexString() != ADDRESS_ZERO && from.toHexString() != pair.id) {
-    let fromUserLiquidityPosition = createLiquidityPosition(pair, from);
-    fromUserLiquidityPosition.liquidityTokenBalance = pairContract.balanceOf(
-      from
+    let fromUserLiquidityPosition = getLiquidityPosition(pair, from);
+    fromUserLiquidityPosition.liquidityTokenBalance = fromUserLiquidityPosition.liquidityTokenBalance.minus(
+      value
     );
     fromUserLiquidityPosition.save();
   }
@@ -64,8 +59,10 @@ export function handleTransfer(event: Transfer): void {
     event.params.to.toHexString() != ADDRESS_ZERO &&
     to.toHexString() != pair.id
   ) {
-    let toUserLiquidityPosition = createLiquidityPosition(pair, to);
-    toUserLiquidityPosition.liquidityTokenBalance = pairContract.balanceOf(to);
+    let toUserLiquidityPosition = getLiquidityPosition(pair, to);
+    toUserLiquidityPosition.liquidityTokenBalance = toUserLiquidityPosition.liquidityTokenBalance.plus(
+      value
+    );
     toUserLiquidityPosition.save();
   }
 }

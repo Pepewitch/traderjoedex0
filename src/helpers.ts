@@ -3,11 +3,9 @@ import { log, BigInt, BigDecimal, Address } from "@graphprotocol/graph-ts";
 import { ERC20 } from "../generated/Factory/ERC20";
 import { ERC20SymbolBytes } from "../generated/Factory/ERC20SymbolBytes";
 import { ERC20NameBytes } from "../generated/Factory/ERC20NameBytes";
-import { User, LiquidityPosition, Pair } from "../generated/schema";
-import { Factory as FactoryContract } from "../generated/templates/Pair/Factory";
+import { LiquidityPosition, Pair } from "../generated/schema";
 
 export const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
-export const FACTORY_ADDRESS = "0x9ad6c38be94206ca50bb0d90783181662f0cfa10";
 
 export let ZERO_BI = BigInt.fromI32(0);
 export let ONE_BI = BigInt.fromI32(1);
@@ -15,9 +13,6 @@ export let ZERO_BD = BigDecimal.fromString("0");
 export let ONE_BD = BigDecimal.fromString("1");
 export let BI_18 = BigInt.fromI32(18);
 
-export let factoryContract = FactoryContract.bind(
-  Address.fromString(FACTORY_ADDRESS)
-);
 
 // rebass tokens, dont count in tracked volume
 export let UNTRACKED_PAIRS: string[] = [];
@@ -128,7 +123,7 @@ export function fetchTokenDecimals(tokenAddress: Address): BigInt {
   return BigInt.fromI32(0);
 }
 
-export function createLiquidityPosition(
+export function getLiquidityPosition(
   pair: Pair,
   user: Address
 ): LiquidityPosition {
@@ -138,18 +133,9 @@ export function createLiquidityPosition(
     liquidityTokenBalance = new LiquidityPosition(id);
     liquidityTokenBalance.liquidityTokenBalance = ZERO_BI;
     liquidityTokenBalance.pair = pair.id;
-    liquidityTokenBalance.user = user.toHexString();
-    liquidityTokenBalance.save();
+    liquidityTokenBalance.user = user;
   }
   if (liquidityTokenBalance === null)
     log.error("LiquidityTokenBalance is null", [id]);
   return liquidityTokenBalance as LiquidityPosition;
-}
-
-export function createUser(address: Address): void {
-  let user = User.load(address.toHexString());
-  if (user === null) {
-    user = new User(address.toHexString());
-    user.save();
-  }
 }
