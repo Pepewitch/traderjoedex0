@@ -1,51 +1,67 @@
-import { BigInt } from "@graphprotocol/graph-ts"
-import { Factory, PairCreated } from "../generated/Factory/Factory"
-import { ExampleEntity } from "../generated/schema"
+import { BigInt } from "@graphprotocol/graph-ts";
+import { Factory, PairCreated } from "../generated/Factory/Factory";
+import { Pair, Token } from "../generated/schema";
+import {
+  fetchTokenSymbol,
+  fetchTokenDecimals,
+  fetchTokenName,
+  fetchTokenTotalSupply,
+  ZERO_BI,
+  ZERO_BD,
+} from "./helpers";
+import { Pair as PairTemplate } from '../generated/templates'
 
 export function handlePairCreated(event: PairCreated): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
+  // create the tokens
+  let token0 = Token.load(event.params.token0.toHexString());
+  let token1 = Token.load(event.params.token1.toHexString());
 
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
+  // fetch info if null
+  if (token0 === null) {
+    token0 = new Token(event.params.token0.toHexString());
+    token0.symbol = fetchTokenSymbol(event.params.token0);
+    token0.name = fetchTokenName(event.params.token0);
+    token0.totalSupply = fetchTokenTotalSupply(event.params.token0);
+    let decimals = fetchTokenDecimals(event.params.token0);
 
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
+    // bail if we couldn't figure out the decimals
+    if (decimals === null) {
+      return;
+    }
+
+    token0.decimals = decimals;
   }
 
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
+  // fetch info if null
+  if (token1 === null) {
+    token1 = new Token(event.params.token1.toHexString());
+    token1.symbol = fetchTokenSymbol(event.params.token1);
+    token1.name = fetchTokenName(event.params.token1);
+    token1.totalSupply = fetchTokenTotalSupply(event.params.token1);
+    let decimals = fetchTokenDecimals(event.params.token1);
 
-  // Entity fields can be set based on event parameters
-  entity.token0 = event.params.token0
-  entity.token1 = event.params.token1
+    // bail if we couldn't figure out the decimals
+    if (decimals === null) {
+      return;
+    }
+    token1.decimals = decimals;
+  }
 
-  // Entities can be written to the store with `.save()`
-  entity.save()
+  let pair = new Pair(event.params.pair.toHexString()) as Pair;
+  pair.token0 = token0.id;
+  pair.token1 = token1.id;
+  pair.liquidityProviderCount = ZERO_BI;
+  pair.createdAtTimestamp = event.block.timestamp;
+  pair.createdAtBlockNumber = event.block.number;
+  pair.reserve0 = ZERO_BD;
+  pair.reserve1 = ZERO_BD;
+  pair.totalSupply = ZERO_BD;
 
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
+  // create the tracked contract based on the template
+  PairTemplate.create(event.params.pair);
 
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.INIT_CODE_PAIR_HASH(...)
-  // - contract.allPairs(...)
-  // - contract.allPairsLength(...)
-  // - contract.createPair(...)
-  // - contract.feeTo(...)
-  // - contract.feeToSetter(...)
-  // - contract.getPair(...)
+  // save updated values
+  token0.save();
+  token1.save();
+  pair.save();
 }
