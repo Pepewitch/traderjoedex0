@@ -11,92 +11,18 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
-export class Token extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("symbol", Value.fromString(""));
-    this.set("name", Value.fromString(""));
-    this.set("decimals", Value.fromBigInt(BigInt.zero()));
-    this.set("totalSupply", Value.fromBigInt(BigInt.zero()));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save Token entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type Token must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("Token", id.toString(), this);
-    }
-  }
-
-  static load(id: string): Token | null {
-    return changetype<Token | null>(store.get("Token", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get symbol(): string {
-    let value = this.get("symbol");
-    return value!.toString();
-  }
-
-  set symbol(value: string) {
-    this.set("symbol", Value.fromString(value));
-  }
-
-  get name(): string {
-    let value = this.get("name");
-    return value!.toString();
-  }
-
-  set name(value: string) {
-    this.set("name", Value.fromString(value));
-  }
-
-  get decimals(): BigInt {
-    let value = this.get("decimals");
-    return value!.toBigInt();
-  }
-
-  set decimals(value: BigInt) {
-    this.set("decimals", Value.fromBigInt(value));
-  }
-
-  get totalSupply(): BigInt {
-    let value = this.get("totalSupply");
-    return value!.toBigInt();
-  }
-
-  set totalSupply(value: BigInt) {
-    this.set("totalSupply", Value.fromBigInt(value));
-  }
-}
-
 export class Pair extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("token0", Value.fromString(""));
-    this.set("token1", Value.fromString(""));
-    this.set("reserve0", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("reserve1", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("totalSupply", Value.fromBigDecimal(BigDecimal.zero()));
+    this.set("token0", Value.fromBytes(Bytes.empty()));
+    this.set("token1", Value.fromBytes(Bytes.empty()));
+    this.set("reserve0", Value.fromBigInt(BigInt.zero()));
+    this.set("reserve1", Value.fromBigInt(BigInt.zero()));
+    this.set("totalSupply", Value.fromBigInt(BigInt.zero()));
     this.set("createdAtTimestamp", Value.fromBigInt(BigInt.zero()));
     this.set("createdAtBlockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("liquidityProviderCount", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -124,49 +50,49 @@ export class Pair extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get token0(): string {
+  get token0(): Bytes {
     let value = this.get("token0");
-    return value!.toString();
+    return value!.toBytes();
   }
 
-  set token0(value: string) {
-    this.set("token0", Value.fromString(value));
+  set token0(value: Bytes) {
+    this.set("token0", Value.fromBytes(value));
   }
 
-  get token1(): string {
+  get token1(): Bytes {
     let value = this.get("token1");
-    return value!.toString();
+    return value!.toBytes();
   }
 
-  set token1(value: string) {
-    this.set("token1", Value.fromString(value));
+  set token1(value: Bytes) {
+    this.set("token1", Value.fromBytes(value));
   }
 
-  get reserve0(): BigDecimal {
+  get reserve0(): BigInt {
     let value = this.get("reserve0");
-    return value!.toBigDecimal();
+    return value!.toBigInt();
   }
 
-  set reserve0(value: BigDecimal) {
-    this.set("reserve0", Value.fromBigDecimal(value));
+  set reserve0(value: BigInt) {
+    this.set("reserve0", Value.fromBigInt(value));
   }
 
-  get reserve1(): BigDecimal {
+  get reserve1(): BigInt {
     let value = this.get("reserve1");
-    return value!.toBigDecimal();
+    return value!.toBigInt();
   }
 
-  set reserve1(value: BigDecimal) {
-    this.set("reserve1", Value.fromBigDecimal(value));
+  set reserve1(value: BigInt) {
+    this.set("reserve1", Value.fromBigInt(value));
   }
 
-  get totalSupply(): BigDecimal {
+  get totalSupply(): BigInt {
     let value = this.get("totalSupply");
-    return value!.toBigDecimal();
+    return value!.toBigInt();
   }
 
-  set totalSupply(value: BigDecimal) {
-    this.set("totalSupply", Value.fromBigDecimal(value));
+  set totalSupply(value: BigInt) {
+    this.set("totalSupply", Value.fromBigInt(value));
   }
 
   get createdAtTimestamp(): BigInt {
@@ -185,15 +111,6 @@ export class Pair extends Entity {
 
   set createdAtBlockNumber(value: BigInt) {
     this.set("createdAtBlockNumber", Value.fromBigInt(value));
-  }
-
-  get liquidityProviderCount(): BigInt {
-    let value = this.get("liquidityProviderCount");
-    return value!.toBigInt();
-  }
-
-  set liquidityProviderCount(value: BigInt) {
-    this.set("liquidityProviderCount", Value.fromBigInt(value));
   }
 
   get liquidityPositions(): Array<string> {
@@ -265,7 +182,7 @@ export class LiquidityPosition extends Entity {
 
     this.set("user", Value.fromString(""));
     this.set("pair", Value.fromString(""));
-    this.set("liquidityTokenBalance", Value.fromBigDecimal(BigDecimal.zero()));
+    this.set("liquidityTokenBalance", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -313,12 +230,12 @@ export class LiquidityPosition extends Entity {
     this.set("pair", Value.fromString(value));
   }
 
-  get liquidityTokenBalance(): BigDecimal {
+  get liquidityTokenBalance(): BigInt {
     let value = this.get("liquidityTokenBalance");
-    return value!.toBigDecimal();
+    return value!.toBigInt();
   }
 
-  set liquidityTokenBalance(value: BigDecimal) {
-    this.set("liquidityTokenBalance", Value.fromBigDecimal(value));
+  set liquidityTokenBalance(value: BigInt) {
+    this.set("liquidityTokenBalance", Value.fromBigInt(value));
   }
 }
