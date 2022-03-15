@@ -7,7 +7,7 @@ import { User, LiquidityPosition, Pair } from "../generated/schema";
 import { Factory as FactoryContract } from "../generated/templates/Pair/Factory";
 
 export const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
-export const FACTORY_ADDRESS = "0xca143ce32fe78f1f7019d7d551a6402fc5350c73";
+export const FACTORY_ADDRESS = "0x9ad6c38be94206ca50bb0d90783181662f0cfa10";
 
 export let ZERO_BI = BigInt.fromI32(0);
 export let ONE_BI = BigInt.fromI32(1);
